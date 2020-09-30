@@ -12,6 +12,13 @@
 - Prevent multiple transmission exceptions propagation upwards [#312](https://github.com/PegaSysEng/ethsigner/pull/312)
 - Resolve failures in the application of CORS headers [#286](https://github.com/PegaSysEng/ethsigner/pull/286)
 
+## 0.7.1-ADHARA
+
+### Features Added
+- Added "eth_signTransaction" JSON RPC
+- Added AWS CloudHSM signer
+- Added Generic PKCS11 signer
+
 ## 0.7.0
 
 ### Features Added

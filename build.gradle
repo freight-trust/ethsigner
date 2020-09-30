@@ -36,6 +36,8 @@ if (!JavaVersion.current().java11Compatible) {
   "  Detected version ${JavaVersion.current()}")
 }
 
+def dockerRepo = "adharatech"
+
 def bintrayUser = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
 def bintrayKey = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
 def bintrayPackage = bintray.pkg {
@@ -119,8 +121,16 @@ allprojects {
 
   repositories {
     jcenter()
+    mavenLocal()
     mavenCentral()
-    maven { url "https://consensys.bintray.com/pegasys-repo" }
+    //maven { url "https://consensys.bintray.com/pegasys-repo" }
+    maven {
+      url "https://adhara.jfrog.io/artifactory/maven"
+      credentials {
+        username = System.getenv('ARTIFACTORY_USER')
+        password = System.getenv('ARTIFACTORY_PASSWORD')
+      }
+    }
   }
 
   dependencies { errorprone("com.google.errorprone:error_prone_core") }
@@ -210,6 +220,7 @@ allprojects {
     jvmArgs = [
       '-Xmx4g',
       '-XX:-UseGCOverheadLimit',
+      "-Djava.library.path=/opt/cloudhsm/lib",
       // Mockito and jackson-databind do some strange reflection during tests.
       // This suppresses an illegal access warning.
       '--add-opens',
@@ -341,6 +352,7 @@ subprojects {
   dependencies {
     testImplementation sourceSets.testSupport.output
     integrationTestImplementation sourceSets.testSupport.output
+    compile fileTree(dir: "${rootDir}/libs", include: "*.jar")
   }
 
   task integrationTest(type: Test, dependsOn: ["compileTestJava"]) {
@@ -390,6 +402,7 @@ applicationDefaultJvmArgs = [
   "-Dlog4j.shutdownHookEnabled=false",
   // netty specific module warnings
   "-Dio.netty.tryReflectionSetAccessible=true",
+  "-Djava.library.path=/opt/cloudhsm/lib",
   "--add-exports",
   "java.base/jdk.internal.misc=ALL-UNNAMED",
   "--add-opens",
@@ -425,6 +438,7 @@ startScripts {
 }
 
 dependencies {
+  compile fileTree(dir: "${rootDir}/libs", include: "*.jar")
   compile project(':ethsigner:app')
   errorprone 'com.google.errorprone:error_prone_core'
 }
@@ -478,29 +492,36 @@ tasks.register("dockerDistUntar") {
 }
 
 task distDocker(type: Exec) {
+  def tagSuffix = project.hasProperty("dockerfile")? "-" + dockerfile : ""
+  def dockerfile = project.hasProperty("dockerfile")? dockerfile + ".Dockerfile" : "Dockerfile"
   dependsOn dockerDistUntar
   def dockerBuildVersion = project.hasProperty('release.releaseVersion') ? project.property('release.releaseVersion') : "${rootProject.version}"
-  def imageName = "pegasyseng/" + repositoryName
-  def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion') : "${imageName}:${project.version}"
+  def imageName = dockerRepo + "/" + repositoryName
+  def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion')  + "${tagSuffix}": "${imageName}:${project.version}${tagSuffix}"
   def dockerBuildDir = "build/docker-" + repositoryName + "/"
   workingDir "${dockerBuildDir}"
 
   doFirst {
     copy {
-      from file("${projectDir}/docker/Dockerfile")
+      from file("${projectDir}/docker/" + dockerfile)
+      into(workingDir)
+    }
+    copy {
+      from file("${projectDir}/docker/cloudhsm-entrypoint.sh")
       into(workingDir)
     }
   }
 
   executable "sh"
-  args "-c", "docker build --build-arg BUILD_DATE=${buildTime()} --build-arg VERSION=${dockerBuildVersion} --build-arg VCS_REF=${getCheckedOutGitCommitHash()} -t ${image} ."
+  args "-c", "docker build -f ${dockerfile} --build-arg BUILD_DATE=${buildTime()} --build-arg VERSION=${dockerBuildVersion} --build-arg VCS_REF=${getCheckedOutGitCommitHash()} -t ${image} ."
 }
 
 task testDocker(type: Exec) {
   dependsOn distDocker
+  def tagSuffix = project.hasProperty("dockerfile")? "-" + dockerfile : ""
   def dockerReportsDir = "docker/reports/"
-  def imageName = "pegasyseng/" + repositoryName
-  def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion') : "${imageName}:${project.version}"
+  def imageName = dockerRepo + "/" + repositoryName
+  def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion')  + "${tagSuffix}": "${imageName}:${project.version}${tagSuffix}"
   workingDir "docker"
 
   doFirst {
@@ -513,18 +534,19 @@ task testDocker(type: Exec) {
 
 task dockerUpload(type: Exec) {
   dependsOn distDocker
-  def imageName = "pegasyseng/" + repositoryName
-  def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion') : "${imageName}:${project.version}"
+  def tagSuffix = project.hasProperty("dockerfile")? "-" + dockerfile : ""
+  def imageName = dockerRepo + "/" + repositoryName
+  def image = project.hasProperty('release.releaseVersion') ? "${imageName}:" + project.property('release.releaseVersion')  + "${tagSuffix}": "${imageName}:${project.version}${tagSuffix}"
   def cmd = "docker push '${image}'"
   def additionalTags = []
 
   if (project.hasProperty('branch') && project.property('branch') == 'master') {
-    additionalTags.add('develop')
+    additionalTags.add("develop${tagSuffix}")
   }
 
   if (!(version ==~ /.*-SNAPSHOT/)) {
-    additionalTags.add('latest')
-    additionalTags.add(version.split(/\./)[0..1].join('.'))
+    additionalTags.add("latest${tagSuffix}")
+    additionalTags.add(version.split(/\./)[0..1].join('.') + "${tagSuffix}")
   }
 
   additionalTags.each { tag -> cmd += " && docker tag '${image}' '${imageName}:${tag.trim()}' && docker push '${imageName}:${tag.trim()}'" }

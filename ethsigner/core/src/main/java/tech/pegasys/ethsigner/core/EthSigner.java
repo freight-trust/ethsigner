@@ -16,6 +16,7 @@ import tech.pegasys.ethsigner.core.config.ClientAuthConstraints;
 import tech.pegasys.ethsigner.core.config.Config;
 import tech.pegasys.ethsigner.core.config.TlsOptions;
 import tech.pegasys.ethsigner.core.jsonrpc.JsonDecoder;
+import tech.pegasys.ethsigner.core.metrics.MetricsEndpoint;
 import tech.pegasys.ethsigner.core.requesthandler.sendtransaction.DownstreamPathCalculator;
 import tech.pegasys.ethsigner.core.util.FileUtil;
 import tech.pegasys.signers.secp256k1.api.SignerProvider;
@@ -71,6 +72,14 @@ public final class EthSigner {
             .setReuseAddress(true)
             .setReusePort(true);
 
+    final MetricsEndpoint metricsEndpoint =
+        new MetricsEndpoint(
+            config.isMetricsEnabled(),
+            config.getMetricsPort(),
+            config.getMetricsHost(),
+            config.getMetricCategories(),
+            config.getMetricsHostAllowList());
+
     final Vertx vertx = Vertx.vertx();
     try {
       final Runner runner =
@@ -84,12 +93,22 @@ public final class EthSigner {
               jsonDecoder,
               config.getDataPath(),
               vertx,
-              config.getCorsAllowedOrigins());
+              config.getCorsAllowedOrigins(),
+              metricsEndpoint);
 
       runner.start();
     } catch (final Throwable t) {
       vertx.close();
       throw new InitializationException("Failed to create http service.", t);
+    }
+    Runtime.getRuntime().addShutdownHook(new Shutdown());
+  }
+
+  class Shutdown extends Thread {
+    @Override
+    public void run() {
+      signerProvider.shutdown();
+      System.out.println("Shutting down EthSigner");
     }
   }
 

@@ -74,8 +74,7 @@ public class HSMSubCommand extends SignerSubCommand {
   private String ethAddress;
 
   private Signer createSigner() throws SignerInitializationException {
-    final HSMConfig config =
-        new HSMConfig(libraryPath != null ? libraryPath.toString() : null, slotLabel, slotPin);
+    final HSMConfig config = new HSMConfig(libraryPath.toString(), slotLabel, slotPin);
     final HSMWalletProvider provider = new HSMWalletProvider(config);
     final HSMSignerFactory factory = new HSMSignerFactory(provider);
     return factory.createSigner(ethAddress);

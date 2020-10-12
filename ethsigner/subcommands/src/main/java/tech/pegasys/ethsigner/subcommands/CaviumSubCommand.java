@@ -36,7 +36,6 @@ import picocli.CommandLine.Spec;
     mixinStandardHelpOptions = true)
 public class CaviumSubCommand extends SignerSubCommand {
 
-  // private static final String READ_PIN_FILE_ERROR = "Error when reading the pin from file.";
   public static final String COMMAND_NAME = "cavium-signer";
 
   public CaviumSubCommand() {}
@@ -68,8 +67,7 @@ public class CaviumSubCommand extends SignerSubCommand {
 
   private Signer createSigner() throws SignerInitializationException {
     final CaviumKeyStoreProvider provider =
-        new CaviumKeyStoreProvider(
-            new CaviumConfig(libraryPath != null ? libraryPath.toString() : null, slotPin));
+        new CaviumKeyStoreProvider(new CaviumConfig(libraryPath.toString(), slotPin));
     final CaviumKeyStoreSignerFactory factory = new CaviumKeyStoreSignerFactory(provider);
     return factory.createSigner(ethAddress);
   }

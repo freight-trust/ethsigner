@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 ConsenSys AG.
+ * Copyright 2020 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -91,6 +91,9 @@ public class MultiKeySubCommand extends SignerSubCommand {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("directoryPath", directoryPath).toString();
+    return MoreObjects.toStringHelper(this)
+        .add("directoryPath", directoryPath)
+        .add("configPath", configPath)
+        .toString();
   }
 }

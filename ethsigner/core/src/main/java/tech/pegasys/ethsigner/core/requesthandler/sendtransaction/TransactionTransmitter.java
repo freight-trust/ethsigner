@@ -92,12 +92,12 @@ public class TransactionTransmitter extends ForwardedMessageResponder {
 
   private boolean populateNonce() {
     try {
-      transaction.updateNonce();
+      transaction.updateFieldsIfRequired();
       return true;
     } catch (final RuntimeException e) {
       // It is currently recognised that the underlying nonce provider will wrap a transmission
       // exception in a Runtime exception.
-      LOG.warn("Unable to get nonce from web3j provider.", e);
+      LOG.warn("Unable to get nonce (or enclave lookup id) from web3j provider.", e);
       this.handleFailure(e.getCause());
     } catch (final Throwable thrown) {
       LOG.debug("Failed to encode/serialize transaction: {}", transaction, thrown);

@@ -95,7 +95,7 @@ public class ReplayProtectionAcceptanceTest {
                     RECIPIENT,
                     TRANSFER_AMOUNT_WEI));
 
-    assertThat(signerResponse.status()).isEqualTo(BAD_REQUEST);
+    assertThat(signerResponse.status()).isEqualTo(OK);
     assertThat(signerResponse.jsonRpc().getError()).isEqualTo(WRONG_CHAIN_ID);
   }
 
@@ -115,7 +115,7 @@ public class ReplayProtectionAcceptanceTest {
                     RECIPIENT,
                     TRANSFER_AMOUNT_WEI));
 
-    assertThat(signerResponse.status()).isEqualTo(BAD_REQUEST);
+    assertThat(signerResponse.status()).isEqualTo(OK);
     assertThat(signerResponse.jsonRpc().getError())
         .isEqualTo(REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED);
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -23,8 +23,8 @@ import org.web3j.utils.Numeric;
 
 public class TransactionSerializer {
 
-  private final Signer signer;
-  private final long chainId;
+  protected final Signer signer;
+  protected final long chainId;
 
   public TransactionSerializer(final Signer signer, final long chainId) {
     this.signer = signer;

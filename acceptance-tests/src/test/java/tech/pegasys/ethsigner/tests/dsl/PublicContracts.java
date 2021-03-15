@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -14,6 +14,9 @@ package tech.pegasys.ethsigner.tests.dsl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.ethsigner.tests.dsl.utils.ExceptionUtils.failOnIOException;
+
+import tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcErrorResponse;
+import tech.pegasys.ethsigner.tests.dsl.signer.SignerResponse;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -32,6 +35,12 @@ public class PublicContracts extends Contracts<Transaction> {
   @Override
   public String sendTransaction(final Transaction smartContract) throws IOException {
     return eth.sendTransaction(smartContract);
+  }
+
+  @Override
+  public SignerResponse<JsonRpcErrorResponse> sendTransactionExpectsError(
+      final Transaction smartContract) throws IOException {
+    return eth.sendTransactionExpectsError(smartContract);
   }
 
   @Override

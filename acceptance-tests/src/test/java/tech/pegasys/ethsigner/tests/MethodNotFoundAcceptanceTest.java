@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -28,7 +28,7 @@ public class MethodNotFoundAcceptanceTest extends AcceptanceTestBase {
     final SignerResponse<JsonRpcErrorResponse> response =
         ethSigner().rawJsonRpcRequests().exceptionalRequest("ibft_getPendingVotes");
 
-    assertThat(response.status()).isEqualTo(HttpResponseStatus.BAD_REQUEST);
+    assertThat(response.status()).isEqualTo(HttpResponseStatus.OK);
     assertThat(response.jsonRpc().getError()).isEqualTo(JsonRpcError.METHOD_NOT_ENABLED);
   }
 
@@ -37,7 +37,7 @@ public class MethodNotFoundAcceptanceTest extends AcceptanceTestBase {
     final SignerResponse<JsonRpcErrorResponse> response =
         ethSigner().rawJsonRpcRequests().exceptionalRequest("invalidJsonRpcMethod");
 
-    assertThat(response.status()).isEqualTo(HttpResponseStatus.BAD_REQUEST);
+    assertThat(response.status()).isEqualTo(HttpResponseStatus.OK);
     assertThat(response.jsonRpc().getError()).isEqualTo(JsonRpcError.METHOD_NOT_FOUND);
   }
 }

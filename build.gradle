@@ -24,6 +24,7 @@ plugins {
   id 'me.champeau.gradle.jmh' version '0.5.0' apply false
   id 'net.ltgt.errorprone' version '1.1.1'
   id 'net.researchgate.release' version '2.8.1'
+  id 'org.ajoberstar.grgit' version '4.1.0'
 }
 
 String projectName = "EthSigner"
@@ -277,7 +278,7 @@ subprojects {
           }
           pom {
             name = projectName + " -  ${project.name}"
-            url = 'http://github.com/PegaSysEng/' + repositoryName
+            url = 'http://github.com/ConsenSys/' + repositoryName
             licenses {
               license {
                 name = 'The Apache License, Version 2.0'
@@ -285,10 +286,10 @@ subprojects {
               }
             }
             scm {
-              def hostPath = 'github.com/PegasysEng/' + repositoryName + '.git'
+              def hostPath = 'github.com/ConsenSys/' + repositoryName + '.git'
               connection = 'scm:git:git://' + hostPath
               developerConnection = 'scm:git:ssh://' + hostPath
-              url = 'https://github.com/PegaSysEng/' + repositoryName
+              url = 'https://github.com/ConsenSys/' + repositoryName
             }
           }
         }

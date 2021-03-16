@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -43,10 +43,13 @@ public class TransactionFactory {
     final String method = request.getMethod().toLowerCase();
     final VertxNonceRequestTransmitter nonceRequestTransmitter =
         new VertxNonceRequestTransmitter(context.request().headers(), decoder, transmitterFactory);
+    final VertxStoreRawRequestTransmitter storeRawRequestTransmitter =
+        new VertxStoreRawRequestTransmitter(
+            context.request().headers(), decoder, transmitterFactory);
 
     switch (method) {
       case "eth_sendtransaction":
-        return createEthTransaction(request, nonceRequestTransmitter);
+        return createEthTransaction(request, nonceRequestTransmitter, storeRawRequestTransmitter);
       case "eea_sendtransaction":
         return createEeaTransaction(request, nonceRequestTransmitter);
       default:
@@ -55,13 +58,23 @@ public class TransactionFactory {
   }
 
   private Transaction createEthTransaction(
-      final JsonRpcRequest request, final VertxNonceRequestTransmitter requestTransmitter) {
+      final JsonRpcRequest request,
+      final VertxNonceRequestTransmitter nonceRequestTransmitter,
+      final VertxStoreRawRequestTransmitter storeRawRequestTransmitter) {
     final EthSendTransactionJsonParameters params =
         fromRpcRequestToJsonParam(EthSendTransactionJsonParameters.class, request);
 
     final NonceProvider ethNonceProvider =
-        new EthNonceProvider(params.sender(), requestTransmitter);
-    return new EthTransaction(params, ethNonceProvider, request.getId());
+        new EthNonceProvider(params.sender(), nonceRequestTransmitter);
+    final StoreRawEnclaveLookupIdProvider lookupIdProvider =
+        new StoreRawEnclaveLookupIdProvider(storeRawRequestTransmitter);
+
+    if (params.privateFor().isPresent()) {
+      return GoQuorumPrivateTransaction.from(
+          params, ethNonceProvider, lookupIdProvider, request.getId());
+    } else {
+      return new EthTransaction(params, ethNonceProvider, request.getId());
+    }
   }
 
   private Transaction createEeaTransaction(

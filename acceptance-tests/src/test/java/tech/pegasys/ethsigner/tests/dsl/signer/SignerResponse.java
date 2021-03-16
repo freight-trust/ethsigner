@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,11 +12,13 @@
  */
 package tech.pegasys.ethsigner.tests.dsl.signer;
 
+import tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcError;
 import tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcErrorResponse;
 import tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcResponse;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.Json;
+import org.web3j.protocol.core.Response;
 import org.web3j.protocol.exceptions.ClientConnectionException;
 
 public class SignerResponse<T extends JsonRpcResponse> {
@@ -53,5 +55,18 @@ public class SignerResponse<T extends JsonRpcResponse> {
     } else {
       throw new RuntimeException("Unable to parse web3j exception message", e);
     }
+  }
+
+  public static SignerResponse<JsonRpcErrorResponse> fromWeb3jErrorResponse(
+      final Response<?> response) {
+    if (response != null && response.hasError()) {
+      final Response.Error error = response.getError();
+      final JsonRpcError jsonRpcError = JsonRpcError.fromJson(error.getCode(), error.getMessage());
+      final JsonRpcErrorResponse jsonRpcErrorResponse =
+          new JsonRpcErrorResponse(response.getId(), jsonRpcError);
+      return new SignerResponse<>(jsonRpcErrorResponse, HttpResponseStatus.OK);
+    }
+
+    return null;
   }
 }

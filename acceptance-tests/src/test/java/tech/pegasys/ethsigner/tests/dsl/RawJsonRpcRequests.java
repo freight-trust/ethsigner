@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -54,7 +54,11 @@ public class RawJsonRpcRequests {
     final Request<?, ArbitraryResponseType> request = requestFactory.createRequest(method);
 
     try {
-      failOnIOException(request::send);
+      final SignerResponse<JsonRpcErrorResponse> response =
+          SignerResponse.fromWeb3jErrorResponse(failOnIOException(request::send));
+      if (response != null) {
+        return response;
+      }
       fail("Expecting exceptional response ");
       return null;
     } catch (final ClientConnectionException e) {

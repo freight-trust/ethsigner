@@ -10,7 +10,7 @@ executors:
       - image: circleci/openjdk:11.0.8-jdk-buster
         auth:
           username: $DOCKER_USER_RO
-          password: $DOCKER_PASSWORD_RO
+          password: $DOCKER_PASSWORD_RO             
     resource_class: medium
     working_directory: ~/project
     environment:
@@ -22,7 +22,7 @@ executors:
       - image: circleci/openjdk:11.0.8-jdk-buster
         auth:
           username: $DOCKER_USER_RO
-          password: $DOCKER_PASSWORD_RO
+          password: $DOCKER_PASSWORD_RO     
     resource_class: large
     working_directory: ~/project
     environment:

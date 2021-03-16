@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -21,6 +21,7 @@ import tech.pegasys.ethsigner.core.jsonrpc.JsonRpcRequestId;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
+import org.jetbrains.annotations.NotNull;
 import org.web3j.crypto.Sign.SignatureData;
 
 public interface Transaction {
@@ -30,7 +31,7 @@ public interface Transaction {
   String DEFAULT_DATA = "";
   String DEFAULT_TO = "";
 
-  void updateNonce();
+  void updateFieldsIfRequired();
 
   byte[] rlpEncode(SignatureData signatureData);
 
@@ -52,6 +53,9 @@ public interface Transaction {
     buffer.putLong(x);
     return buffer.array();
   }
+
+  @NotNull
+  String getJsonRpcMethodName();
 
   static JsonRpcRequest jsonRpcRequest(
       final String signedTransactionHexString, final JsonRpcRequestId id, final String rpcMethod) {

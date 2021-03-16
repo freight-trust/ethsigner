@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -70,7 +70,9 @@ public final class EthSigner {
             .setPort(config.getHttpListenPort())
             .setHost(config.getHttpListenHost())
             .setReuseAddress(true)
-            .setReusePort(true);
+            .setReusePort(true)
+            .setHandle100ContinueAutomatically(true)
+            .setCompressionSupported(true);
 
     final MetricsEndpoint metricsEndpoint =
         new MetricsEndpoint(

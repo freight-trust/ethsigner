@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  */
 package tech.pegasys.ethsigner.tests.signing;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcError.REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED;
 import static tech.pegasys.ethsigner.core.jsonrpc.response.JsonRpcError.WRONG_CHAIN_ID;
@@ -95,7 +95,7 @@ public class ReplayProtectionAcceptanceTest {
                     RECIPIENT,
                     TRANSFER_AMOUNT_WEI));
 
-    assertThat(signerResponse.status()).isEqualTo(BAD_REQUEST);
+    assertThat(signerResponse.status()).isEqualTo(OK);
     assertThat(signerResponse.jsonRpc().getError()).isEqualTo(WRONG_CHAIN_ID);
   }
 
@@ -115,7 +115,7 @@ public class ReplayProtectionAcceptanceTest {
                     RECIPIENT,
                     TRANSFER_AMOUNT_WEI));
 
-    assertThat(signerResponse.status()).isEqualTo(BAD_REQUEST);
+    assertThat(signerResponse.status()).isEqualTo(OK);
     assertThat(signerResponse.jsonRpc().getError())
         .isEqualTo(REPLAY_PROTECTED_SIGNATURES_NOT_SUPPORTED);
   }

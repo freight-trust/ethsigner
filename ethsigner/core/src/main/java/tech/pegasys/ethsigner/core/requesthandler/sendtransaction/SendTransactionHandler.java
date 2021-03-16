@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 ConsenSys AG.
+ * Copyright 2019 ConsenSys AG.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
  * the License. You may obtain a copy of the License at
@@ -21,8 +21,10 @@ import tech.pegasys.ethsigner.core.jsonrpc.JsonRpcRequest;
 import tech.pegasys.ethsigner.core.jsonrpc.exception.JsonRpcException;
 import tech.pegasys.ethsigner.core.requesthandler.JsonRpcRequestHandler;
 import tech.pegasys.ethsigner.core.requesthandler.VertxRequestTransmitterFactory;
+import tech.pegasys.ethsigner.core.requesthandler.sendtransaction.transaction.GoQuorumPrivateTransaction;
 import tech.pegasys.ethsigner.core.requesthandler.sendtransaction.transaction.Transaction;
 import tech.pegasys.ethsigner.core.requesthandler.sendtransaction.transaction.TransactionFactory;
+import tech.pegasys.ethsigner.core.signing.GoQuorumPrivateTransactionSerializer;
 import tech.pegasys.ethsigner.core.signing.TransactionSerializer;
 import tech.pegasys.signers.secp256k1.api.Signer;
 
@@ -71,7 +73,6 @@ public class SendTransactionHandler implements JsonRpcRequestHandler {
       return;
     }
 
-    LOG.debug("Obtaining signer for {}", transaction.sender());
     final Optional<Signer> signer = signerProvider.getSigner(transaction.sender());
 
     if (signer.isEmpty()) {
@@ -81,16 +82,20 @@ public class SendTransactionHandler implements JsonRpcRequestHandler {
       return;
     }
 
-    final TransactionSerializer transactionSerializer =
-        new TransactionSerializer(signer.get(), chainId);
-    sendTransaction(transaction, transactionSerializer, context, request);
+    sendTransaction(transaction, context, signer.get(), request);
   }
 
   private void sendTransaction(
       final Transaction transaction,
-      final TransactionSerializer transactionSerializer,
       final RoutingContext routingContext,
+      final Signer signer,
       final JsonRpcRequest request) {
+
+    final TransactionSerializer transactionSerializer =
+        transaction instanceof GoQuorumPrivateTransaction
+            ? new GoQuorumPrivateTransactionSerializer(signer, chainId)
+            : new TransactionSerializer(signer, chainId);
+
     final TransactionTransmitter transmitter =
         createTransactionTransmitter(transaction, transactionSerializer, routingContext, request);
     transmitter.send();
